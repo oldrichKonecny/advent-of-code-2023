@@ -143,7 +143,7 @@ fn char_cmp_value(c: char) -> u64 {
         'A' => 14,
         'K' => 13,
         'Q' => 12,
-        'J' => 11,
+        'J' => 1,
         'T' => 10,
         _ => c.to_digit(10).unwrap() as u64,
     }
