@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::str::FromStr;
+use ahash::RandomState;
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -9,7 +10,7 @@ fn main() {
 }
 
 fn first_part(input: &str) -> u64 {
-    let (instructions, graph) = input.split_once("\n\n").unwrap();
+    let (instructions, graph) = input.split_once("\r\n\r\n").unwrap();
     let mut instruction_iterator = instructions.parse::<InstructionIterator>().unwrap();
 
     let graph = graph.lines()
@@ -40,7 +41,7 @@ fn first_part(input: &str) -> u64 {
 }
 
 fn second_part(input: &str) -> u64 {
-    let (instructions, graph) = input.split_once("\n\n").unwrap();
+    let (instructions, graph) = input.split_once("\r\n\r\n").unwrap();
     let mut instruction_iterator = instructions.parse::<InstructionIterator>().unwrap();
 
     let graph = graph.lines()
@@ -49,7 +50,7 @@ fn second_part(input: &str) -> u64 {
             let (left, right) = edges[1..edges.len()-1].split_once(", ").unwrap();
             (node, (left, right))
         })
-        .collect::<HashMap<_, _>>();
+        .collect::<HashMap<_, _, RandomState>>();
     let mut all_nodes = graph.keys()
         .filter(|node| node.ends_with("A"))
         .collect::<Vec<_>>();
