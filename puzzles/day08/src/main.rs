@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 use ahash::RandomState;
+use num_integer::lcm;
 
 fn main() {
     let input = include_str!("../input.txt");
@@ -55,12 +56,20 @@ fn second_part(input: &str) -> u64 {
         .filter(|node| node.ends_with("A"))
         .collect::<Vec<_>>();
 
+    let mut steps = vec![None; all_nodes.len()];
     loop {
-        // if all_nodes.iter().any(|node| node.ends_with("Z")) {
-        //     println!("{:?} - {}", all_nodes, instruction_iterator.number_of_steps);
-        // }
-        if all_nodes.iter().all(|node| node.ends_with("Z")) {
-            break instruction_iterator.number_of_steps;
+        let ends = all_nodes.iter().enumerate()
+            .filter(|(_, node)| node.ends_with("Z"))
+            .map(|(index, _)| index)
+            .collect::<Vec<_>>();
+
+        if  !ends.is_empty() {
+            for end in ends {
+                steps[end] = Some(instruction_iterator.number_of_steps);
+            }
+            if steps.iter().all(|step| step.is_some())  {
+                break;
+            }
         }
         let inst = instruction_iterator.next().unwrap();
         match  inst {
@@ -78,6 +87,11 @@ fn second_part(input: &str) -> u64 {
             }
         }
     }
+
+    steps.iter()
+        .map(|step| step.unwrap())
+        .reduce(|a, b| lcm(a, b))
+        .unwrap()
 }
 
 
