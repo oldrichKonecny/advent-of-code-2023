@@ -10,7 +10,7 @@ fn main() {
 }
 
 fn first_part(input: &str) -> u64 {
-    let (instructions, graph) = input.split_once("\r\n\r\n").unwrap();
+    let (instructions, graph) = input.split_once("\n\n").unwrap();
     let mut instruction_iterator = instructions.parse::<InstructionIterator>().unwrap();
 
     let graph = graph.lines()
@@ -41,7 +41,7 @@ fn first_part(input: &str) -> u64 {
 }
 
 fn second_part(input: &str) -> u64 {
-    let (instructions, graph) = input.split_once("\r\n\r\n").unwrap();
+    let (instructions, graph) = input.split_once("\n\n").unwrap();
     let mut instruction_iterator = instructions.parse::<InstructionIterator>().unwrap();
 
     let graph = graph.lines()
@@ -56,6 +56,9 @@ fn second_part(input: &str) -> u64 {
         .collect::<Vec<_>>();
 
     loop {
+        // if all_nodes.iter().any(|node| node.ends_with("Z")) {
+        //     println!("{:?} - {}", all_nodes, instruction_iterator.number_of_steps);
+        // }
         if all_nodes.iter().all(|node| node.ends_with("Z")) {
             break instruction_iterator.number_of_steps;
         }
