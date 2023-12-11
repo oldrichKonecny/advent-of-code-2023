@@ -4,7 +4,7 @@ static EAST_CONNECTED_SHAPES: [char; 4] = ['-', 'F', 'L', 'S'];
 static WEST_CONNECTED_SHAPES: [char; 4] = ['-', '7', 'J', 'S'];
 
 fn main() {
-    let input = include_str!("../input_test.txt");
+    let input = include_str!("../input.txt");
 
     println!("First part: {}", first_part(input));
     println!("Second part: {}", second_part(input));
@@ -16,17 +16,24 @@ fn first_part(input: &str) -> u32 {
     graph.mark_node((y, x), 0);
     let mut possible_ways = graph.find_and_mark_possible_ways(y, x);
     while !possible_ways.is_empty() {
-        // println!("{:?}", possible_ways);
         let (y, x) = possible_ways.pop().unwrap();
-        // println!("y: {}, x: {}", y, x);
         possible_ways.extend(graph.find_and_mark_possible_ways(y, x));
     }
     graph.print();
     graph.get_max_node()
 }
 
-fn second_part(input: &str) -> u64 {
-    0
+fn second_part(input: &str) -> u32 {
+    let mut graph = Graph::parse(input);
+    let (y, x) = graph.find_start();
+    graph.mark_node((y, x), 0);
+    let mut possible_ways = graph.find_and_mark_possible_ways(y, x);
+    while !possible_ways.is_empty() {
+        let (y, x) = possible_ways.pop().unwrap();
+        possible_ways.extend(graph.find_and_mark_possible_ways(y, x));
+    }
+
+    graph.number_of_inside_spaces()
 }
 
 struct Graph {
@@ -132,6 +139,72 @@ impl Graph {
             .max().unwrap_or_default()
     }
 
+    fn number_of_inside_spaces(&self) -> u32 {
+        let mut spaces = 0;
+        for (y, line) in self.map.iter().enumerate() {
+            for (x, node) in line.iter().map(|n| n.as_ref()).enumerate() {
+                if (node.is_none() || node.unwrap().steps_from_start.is_none()) && self.is_node_inside((y, x)) {
+                    spaces += 1;
+                }
+            }
+        }
+        spaces
+    }
+
+    fn is_node_inside(&self, (y, x): (usize, usize)) -> bool {
+        let row = self.map.get(y).expect("Cannot get y");
+        let mut num_of_crosses_left = 0;
+        let mut is_line_down = false;
+        let mut is_line_up = false;
+        for i in 0..=x  {
+            let node = row.get(i).expect("Cannot get x");
+            match node {
+                None => {
+                    is_line_up = false;
+                    is_line_down = false;
+                }
+                Some(node) => {
+                    match (node.steps_from_start.is_some(), node.node_type) {
+                        (true, '|') => {
+                            num_of_crosses_left += 1;
+                        },
+                        (true, 'F') => {
+                            is_line_up = true;
+                            num_of_crosses_left += 1;
+                        },
+                        (true, 'J') => {
+                            if is_line_up {
+                                is_line_up = false;
+                            } else {
+                                num_of_crosses_left += 1;
+                                is_line_down = false;
+                            }
+                        },
+                        (true, 'L') => {
+                            is_line_down = true;
+                            num_of_crosses_left += 1;
+                        },
+                        (true, '7') => {
+                            if is_line_down {
+                                is_line_down = false;
+                            } else {
+                                num_of_crosses_left += 1;
+                                is_line_up = false;
+                            }
+                        },
+                        (false, _) => {
+                            is_line_up = false;
+                            is_line_down = false;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+
+        num_of_crosses_left & 1 == 1
+    }
+
     fn print(&self) {
         for line in &self.map {
             for node in line {
@@ -147,7 +220,7 @@ impl Graph {
         for line in &self.map {
             for node in line {
                 if let Some(node) = node {
-                    print!("{}", node.steps_from_start.unwrap_or(0));
+                    print!("{} ", node.steps_from_start.map(|s| s.to_string()).unwrap_or(".".to_string()));
                 } else {
                     print!(".");
                 }
@@ -155,14 +228,24 @@ impl Graph {
             println!();
         }
         println!();
-        for line in &self.map {
-            for node in line {
+        for (y, line) in self.map.iter().enumerate() {
+            for (x, node) in line.iter().enumerate() {
                 if let Some(node) = node {
                     if node.steps_from_start.is_some() {
-                        print!("x");
+                        if node.node_type == 'S' {
+                            print!("S");
+                        } else {
+                            print!("H");
+                        }
                     } else {
-                        print!(".");
+                        if self.is_node_inside((y, x)) {
+                            print!("X");
+                        } else {
+                            print!(".");
+                        }
                     }
+                } else if self.is_node_inside((y, x)) {
+                    print!("X");
                 } else {
                     print!(".");
                 }
