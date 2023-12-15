@@ -90,6 +90,9 @@ version = "0.1.0"
 [[package]]
 name = "day12"
 version = "0.1.0"
+dependencies = [
+ "ahash",
+]
 
 [[package]]
 name = "day13"
