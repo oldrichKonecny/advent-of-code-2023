@@ -3,7 +3,7 @@ use std::collections::{VecDeque};
 fn main() {
     let input = include_str!("../input.txt");
 
-    // println!("First part: {}", first_part(input));
+    println!("First part: {}", first_part(input));
     println!("Second part: {}", second_part(input));
 }
 
@@ -18,7 +18,8 @@ fn second_part(input: &str) -> usize {
     let mut grid = Grid::parse(input);
     grid.shortest_path_ultra(0, 0);
     let x = grid.get(grid.grid.len() as i32 - 1, grid.grid[0].len() as i32 -1);
-    x.unwrap().get_min().unwrap()
+    x.unwrap().get_min_ultra().unwrap()
+
 }
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
@@ -56,6 +57,15 @@ impl Node {
             .map(|v| *v)
             .unwrap_or(None)
     }
+
+    fn get_min_ultra(&self) -> Option<usize> {
+        self.possibilities.iter()
+            .flat_map(|dir| dir.iter().skip(3).filter(|x| x.is_some()).min())
+            .min()
+            .filter(|x| x.is_some())
+            .map(|v| *v)
+            .unwrap_or(None)
+    }
 }
 
 #[derive(Debug)]
@@ -74,17 +84,18 @@ impl NodeInfo {
 impl Grid {
     fn parse(input: &str) -> Self {
         let grid = input.lines()
-            .map(|line| line.bytes()
+            .filter(|line| !line.is_empty())
+            .map(|line| line.trim().bytes()
                 .map(|b| Node::new((b - b'0') as usize))
                 .collect())
             .collect();
         Self { grid }
     }
 
-    fn print_lowest_heat_loss(&self) {
+    fn _print_lowest_heat_loss(&self) {
         for line in &self.grid {
             for node in line {
-                print!(" ({},{}) ", node.heat_loss_constant, node.get_min().map(|val| val.to_string()).unwrap_or("x".to_string()));
+                print!(" ({},{:3}) ", node.heat_loss_constant, node.get_min().map(|val| val.to_string()).unwrap_or("x".to_string()));
             }
             println!();
         }
@@ -109,17 +120,26 @@ impl Grid {
         if y < 0 || x < 0 {
             return None;
         }
+        if let Some((_, d)) = prev_node_info.direction {
+            match (direction, d) {
+                (Direction::Up, Direction::Down) |
+                (Direction::Down, Direction::Up) |
+                (Direction::Left, Direction::Right) |
+                (Direction::Right, Direction::Left) => return None,
+                _ => {}
+            }
+        }
+
         let node = self.grid.get_mut(y as usize).and_then(|line| line.get_mut(x as usize));
         if let Some(node) = node {
             if prev_node_info.direction.is_none() || prev_node_info.direction.unwrap().1 != direction || prev_node_info.direction.unwrap().0 < 3 {
                 let direction_length = if prev_node_info.direction.is_none() { 1 } else { prev_node_info.direction.filter(|(_, d)| *d == direction).map(|(v, _)| v).unwrap_or_default()};
                 if node.possibilities[direction as usize][direction_length].is_none() || node.possibilities[direction as usize][direction_length].unwrap() > prev_node_info.distance + node.heat_loss_constant {
                     node.possibilities[direction as usize][direction_length] = Some(prev_node_info.distance + node.heat_loss_constant);
-                    let direction_change = 1 + if prev_node_info.direction.is_none() { 1 } else { prev_node_info.direction.filter(|(_, d)| *d == direction).map(|(v, _)| v).unwrap_or_default()};
                     return Some(NodeInfo::new(
                         (y, x),
                         prev_node_info.distance + node.heat_loss_constant,
-                        Some((direction_change, direction))));
+                        Some((direction_length + 1, direction))));
                 }
             }
         }
@@ -130,17 +150,27 @@ impl Grid {
         if y < 0 || x < 0 {
             return None;
         }
+        if let Some((_, d)) = prev_node_info.direction {
+            match (direction, d) {
+                (Direction::Up, Direction::Down) |
+                (Direction::Down, Direction::Up) |
+                (Direction::Left, Direction::Right) |
+                (Direction::Right, Direction::Left) => return None,
+                _ => {}
+            }
+        }
+
         let node = self.grid.get_mut(y as usize).and_then(|line| line.get_mut(x as usize));
         if let Some(node) = node {
-            if prev_node_info.direction.is_none() || (prev_node_info.direction.unwrap().1 == direction && prev_node_info.direction.unwrap().0 < 10 ) || (prev_node_info.direction.unwrap().1 != direction || prev_node_info.direction.unwrap().0 < 3) {
-                let direction_length = if prev_node_info.direction.is_none() { 1 } else { prev_node_info.direction.filter(|(_, d)| *d == direction).map(|(v, _)| v).unwrap_or_default()};
+            if prev_node_info.direction.is_none() || (prev_node_info.direction.unwrap().1 == direction && prev_node_info.direction.unwrap().0 < 10 ) || (prev_node_info.direction.unwrap().1 != direction && prev_node_info.direction.unwrap().0 >= 4 && prev_node_info.direction.unwrap().0 <= 10) {
+                let direction_length = if prev_node_info.direction.is_none() { 0 } else { prev_node_info.direction.filter(|(_, d)| *d == direction).map(|(v, _)| v).unwrap_or_default()};
                 if node.possibilities[direction as usize][direction_length].is_none() || node.possibilities[direction as usize][direction_length].unwrap() > prev_node_info.distance + node.heat_loss_constant {
+                    // println!("Considering node: ({}, {}) - {} [prev ({}, {}) {:?}]", y, x, node.heat_loss_constant, prev_node_info.coordinates.0, prev_node_info.coordinates.1, prev_node_info.direction);
                     node.possibilities[direction as usize][direction_length] = Some(prev_node_info.distance + node.heat_loss_constant);
-                    let direction_change = 1 + direction_length;
                     return Some(NodeInfo::new(
                         (y, x),
                         prev_node_info.distance + node.heat_loss_constant,
-                        Some((direction_change, direction))));
+                        Some((direction_length + 1, direction))));
                 }
             }
         }
@@ -149,7 +179,7 @@ impl Grid {
 
     fn shortest_path(&mut self, og_y: i32, og_x: i32) {
         let mut queue = VecDeque::new();
-        let mut start = self.get_mut(og_y, og_x).unwrap();
+        let start = self.get_mut(og_y, og_x).unwrap();
         start.possibilities = [[Some(0); 10]; 4];
         queue.push_back(NodeInfo::new((og_y, og_x), 0, None));
 
@@ -173,7 +203,7 @@ impl Grid {
 
     fn shortest_path_ultra(&mut self, og_y: i32, og_x: i32) {
         let mut queue = VecDeque::new();
-        let mut start = self.get_mut(og_y, og_x).unwrap();
+        let start = self.get_mut(og_y, og_x).unwrap();
         start.possibilities = [[Some(0); 10]; 4];
         queue.push_back(NodeInfo::new((og_y, og_x), 0, None));
 
@@ -196,5 +226,98 @@ impl Grid {
     }
 }
 
-// 1241 too high
-// 1197 too high
+// 1348 too high
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_first_part_0() {
+        let input =include_str!("../input.txt");
+        assert_eq!(first_part(input), 1195);
+    }
+
+    #[test]
+    fn test_second_part_0() {
+        let input =include_str!("../input.txt");
+        assert_eq!(second_part(input), 1347);
+    }
+
+    #[test]
+    fn test_second_part_1() {
+        let input ="
+            111159999999999
+            999159999999999
+            999159999999999
+            999159999999999
+            999111111111111";
+        assert_eq!(second_part(input), 34);
+    }
+
+    #[test]
+    fn test_second_part_2() {
+        let input ="
+            111111111111
+            999999999991
+            999999999991
+            999999999991
+            999999999991";
+        assert_eq!(second_part(input), 71);
+    }
+
+    #[test]
+    fn test_second_part_3() {
+        let input ="
+            2413432311323
+            3215453535623
+            3255245654254
+            3446585845452
+            4546657867536
+            1438598798454
+            4457876987766
+            3637877979653
+            4654967986887
+            4564679986453
+            1224686865563
+            2546548887735
+            4322674655533";
+        assert_eq!(second_part(input), 94);
+    }
+
+    #[test]
+    fn test_second_part_4() {
+        let input ="
+            11111111119999999999
+            99999999919999999999
+            99999999919999999999
+            99999999919999999999
+            99999999919999999999
+            99999999919999999999
+            99999999919999999999
+            99999999919999999999
+            99999999919999999999
+            99999999919999999999
+            99999999911111111111";
+        assert_eq!(second_part(input), 29);
+    }
+
+    #[test]
+    fn test_second_part_5() {
+        let input ="
+            011111111119999999999
+            999999999919999999999
+            999999999919999999999
+            999999999919999999999
+            999999999919999999999
+            999999999919999999999
+            999999999919999999999
+            999999999919999999999
+            999999999919999999999
+            999999999919999999999
+            999999999911111111111";
+        assert_eq!(second_part(input), 30);
+    }
+
+}
