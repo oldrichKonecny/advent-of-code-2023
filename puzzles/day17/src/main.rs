@@ -226,8 +226,6 @@ impl Grid {
     }
 }
 
-// 1348 too high
-
 
 #[cfg(test)]
 mod tests {
