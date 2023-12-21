@@ -1,129 +1,97 @@
 fn main() {
-    let input = include_str!("../input_test.txt");
+    let input = include_str!("../input.txt");
 
     println!("First part: {}", first_part(input));
     println!("Second part: {}", second_part(input));
 }
 
-fn first_part(input: &str) -> usize {
+fn first_part(input: &str) -> i64 {
     let dig_instructions = input.lines()
         .map(Instruction::parse)
         .collect::<Vec<_>>();
     let basin = Basin::new(&dig_instructions);
-    basin.print();
-    basin.compute_content()
+    basin.compute_shoelace()
 }
 
-fn second_part(input: &str) -> usize {
-    0
+fn second_part(input: &str) -> i64 {
+    let dig_instructions = input.lines()
+        .map(Instruction::parse)
+        .collect::<Vec<_>>();
+    let basin = Basin::new_with_color(&dig_instructions);
+    basin.compute_shoelace()
 }
 
 #[derive(Debug)]
 struct Basin {
-    tiles: Vec<Vec<char>>,
+    bounds: Vec<(i64, i64)>,
 }
 
 impl Basin {
-    fn compute_content(&self) -> usize {
-        let mut content = 0;
-        for y in 0..self.tiles.len() {
-            for x in 0..self.tiles[y].len() {
-                let tile = self.tiles[y][x];
-                if tile == 'x' || tile == '#' {
-                    content += 1;
-                }
-            }
-        }
-        content
-    }
-
     fn new(dig_instructions: &[Instruction]) -> Self {
-        let mut max_height = 0i32;
-        let mut min_height = 0i32;
-        let mut max_width = 0i32;
-        let mut min_width = 0i32;
-        let mut height = 0i32;
-        let mut width = 0i32;
-        for instruction in dig_instructions {
-           match instruction.direction {
-               Direction::U => {
-                   height -= instruction.distance as i32;
-                     if height < min_height {
-                          min_height = height;
-                     }
-               },
-               Direction::D => {
-                   height += instruction.distance as i32;
-                   if height > max_height {
-                       max_height = height;
-                   }
-               },
-               Direction::L => {
-                   width -= instruction.distance as i32;
-                        if width < min_width {
-                            min_width = width;
-                        }
-               },
-               Direction::R => {
-                   width += instruction.distance as i32;
-                     if width > max_width {
-                          max_width = width;
-                     }
-               },
-           }
-        }
+        let mut bounds = vec![(0, 0)];
+        let mut last_point = (0, 0);
 
-        let vec_width = (max_width - min_width) as usize + 1;
-        let vec_height = (max_height - min_height) as usize + 1;
-        let mut tiles = vec![vec!['.'; vec_width]; vec_height];
-        let mut y = (0 - min_height) as usize;
-        let mut x = (0 - min_width) as usize;
         for instruction in dig_instructions {
             match instruction.direction {
-                Direction::U => {
-                    for _ in 0..instruction.distance {
-                        y -= 1;
-                        tiles[y][x] = '#';
-                    }
-                }
-                Direction::D => {
-                    for _ in 0..instruction.distance {
-                        y += 1;
-                        tiles[y][x] = '#';
-                    }
-                }
-                Direction::L => {
-                    for _ in 0..instruction.distance {
-                        x -= 1;
-                        tiles[y][x] = '#';
-                    }
-                }
-                Direction::R => {
-                    for _ in 0..instruction.distance {
-                        x += 1;
-                        tiles[y][x] = '#';
-                    }
-                }
+                Direction::U => last_point = (last_point.0, last_point.1  - instruction.distance),
+                Direction::D => last_point = (last_point.0, last_point.1 + instruction.distance),
+                Direction::L => last_point = (last_point.0 - instruction.distance, last_point.1),
+                Direction::R => last_point = (last_point.0 + instruction.distance, last_point.1),
             }
+            bounds.push(last_point);
         }
-
-        Self { tiles }
+        Self { bounds }
     }
 
-    fn print(&self) {
-        for y in 0..self.tiles.len() {
-            for x in 0..self.tiles[y].len() {
-                print!("{}", self.tiles[y][x]);
-            }
-            println!();
+    fn new_with_color(dig_instructions: &[Instruction]) -> Self {
+        fn decode_color(color: &str) -> (Direction, i64) {
+            let distance = i64::from_str_radix(&color[..color.len() - 1], 16).unwrap();
+            let direction = &color[color.len() - 1..];
+            let direction = match direction {
+                "3" => Direction::U,
+                "1" => Direction::D,
+                "2" => Direction::L,
+                "0" => Direction::R,
+                _ => panic!("Invalid direction"),
+            };
+            (direction, distance)
         }
+
+        let mut bounds = vec![(0, 0)];
+        let mut last_point = (0, 0);
+
+        dig_instructions.iter()
+            .map(|instruction| decode_color(&instruction.color))
+            .for_each(|(direction, distance)| {
+                match direction {
+                    Direction::U => last_point = (last_point.0, last_point.1  - distance),
+                    Direction::D => last_point = (last_point.0, last_point.1 + distance),
+                    Direction::L => last_point = (last_point.0 - distance, last_point.1),
+                    Direction::R => last_point = (last_point.0 + distance, last_point.1),
+                }
+                bounds.push(last_point);
+            });
+
+        Self { bounds }
+    }
+
+    fn compute_shoelace(&self) -> i64 {
+        let mut shoelace = 0;
+        let mut perimeter = 0;
+        for i in 0..self.bounds.len() - 1 {
+            let a = self.bounds[i];
+            let b = self.bounds[i + 1];
+            shoelace += a.0 * b.1 - b.0 * a.1;
+            perimeter += if a.0 == b.0 { (a.1 - b.1).abs() } else { (a.0 - b.0).abs() };
+        }
+        (shoelace.abs() / 2) + (perimeter / 2) + 1
     }
 }
 
 #[derive(Debug)]
 struct Instruction {
     direction: Direction,
-    distance: usize,
+    distance: i64,
     color: String,
 }
 
