@@ -28,12 +28,8 @@ struct BoulderMap {
 
 impl BoulderMap {
     fn parse(input: &str) -> Self {
-        let map = input.lines()
-            .map(|line| line.chars().collect())
-            .collect();
-        Self {
-            map,
-        }
+        let map = input.lines().map(|line| line.chars().collect()).collect();
+        Self { map }
     }
 
     fn print(&self) {
@@ -135,5 +131,3 @@ impl BoulderMap {
         }
     }
 }
-
-

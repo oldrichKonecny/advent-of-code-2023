@@ -6,9 +6,10 @@ fn main() {
 }
 
 fn first_part(input: &str) -> i64 {
-    input.lines()
+    input
+        .lines()
         .map(parse_line)
-        .map(|numbers|determine_next(&numbers))
+        .map(|numbers| determine_next(&numbers))
         .sum()
 }
 
@@ -16,7 +17,8 @@ fn determine_next(numbers: &[i64]) -> i64 {
     let mut number_map = Vec::new();
     let mut temp = numbers.iter().cloned().collect::<Vec<_>>();
     loop {
-        temp = temp.windows(2)
+        temp = temp
+            .windows(2)
             .map(|window| window[1] - window[0])
             .collect::<Vec<_>>();
         if !temp.iter().all(|&n| n == 0) {
@@ -26,17 +28,25 @@ fn determine_next(numbers: &[i64]) -> i64 {
         }
     }
 
-    numbers.last().unwrap() + number_map.iter().rev().skip(1)
-        .fold(number_map.last().unwrap().last().unwrap().clone(), |acc, nums| {
-            nums.last().unwrap() + acc
-        })
+    numbers.last().unwrap()
+        + number_map.iter().rev().skip(1).fold(
+            number_map.last().unwrap().last().unwrap().clone(),
+            |acc, nums| nums.last().unwrap() + acc,
+        )
 }
 
 fn second_part(input: &str) -> i64 {
-    input.lines()
+    input
+        .lines()
         .map(parse_line)
-        .map(|numbers| numbers.iter().rev().map(|n| n.to_owned()).collect::<Vec<_>>())
-        .map(|rev_numbers|determine_next(&rev_numbers))
+        .map(|numbers| {
+            numbers
+                .iter()
+                .rev()
+                .map(|n| n.to_owned())
+                .collect::<Vec<_>>()
+        })
+        .map(|rev_numbers| determine_next(&rev_numbers))
         .sum()
 }
 

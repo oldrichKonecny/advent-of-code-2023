@@ -25,16 +25,28 @@ fn compute_number_of_winnings(time: u64, distance: u64) -> u64 {
 
 fn second_part(input: &str) -> u64 {
     let mut lines = input.lines();
-    let time = lines.next().unwrap().
-        split_once(":").unwrap().1.trim()
+    let time = lines
+        .next()
+        .unwrap()
+        .split_once(":")
+        .unwrap()
+        .1
+        .trim()
         .split_whitespace()
-        .fold(String::new(),|acc, n| acc + n)
-        .parse::<u64>().unwrap();
-    let distance = lines.next().unwrap().
-        split_once(":").unwrap().1.trim()
+        .fold(String::new(), |acc, n| acc + n)
+        .parse::<u64>()
+        .unwrap();
+    let distance = lines
+        .next()
+        .unwrap()
+        .split_once(":")
+        .unwrap()
+        .1
+        .trim()
         .split_whitespace()
-        .fold(String::new(),|acc, n| acc + n)
-        .parse::<u64>().unwrap();
+        .fold(String::new(), |acc, n| acc + n)
+        .parse::<u64>()
+        .unwrap();
     compute_number_of_winnings(time, distance)
 }
 
@@ -46,14 +58,24 @@ struct Race {
 impl Race {
     fn parse(input: &str) -> Self {
         let mut lines = input.lines();
-        let times = lines.next().unwrap().
-            split_once(":").unwrap().1.trim()
+        let times = lines
+            .next()
+            .unwrap()
+            .split_once(":")
+            .unwrap()
+            .1
+            .trim()
             .split_whitespace()
             .map(|n| n.parse::<u64>().unwrap())
             .collect::<Vec<_>>();
 
-        let distances = lines.next().unwrap().
-            split_once(":").unwrap().1.trim()
+        let distances = lines
+            .next()
+            .unwrap()
+            .split_once(":")
+            .unwrap()
+            .1
+            .trim()
             .split_whitespace()
             .map(|n| n.parse::<u64>().unwrap())
             .collect::<Vec<_>>();
@@ -61,7 +83,10 @@ impl Race {
     }
 
     fn iter(&self) -> RaceIterator {
-        RaceIterator { race: self, index: 0}
+        RaceIterator {
+            race: self,
+            index: 0,
+        }
     }
 }
 
@@ -83,4 +108,3 @@ impl<'a> Iterator for RaceIterator<'a> {
         }
     }
 }
-

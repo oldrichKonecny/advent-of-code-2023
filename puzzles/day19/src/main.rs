@@ -9,8 +9,9 @@ fn main() {
 
 fn first_part(input: &str) -> usize {
     let (rules, parts) = parse_input(input);
-    parts.iter()
-        .filter(|part| is_part_accepted(&rules, part, ))
+    parts
+        .iter()
+        .filter(|part| is_part_accepted(&rules, part))
         .map(|part| part.sum_values())
         .sum()
 }
@@ -33,7 +34,11 @@ fn second_part(input: &str) -> u128 {
     rec_compute_number_of_possible_accepted(&rules, "in", ConditionCalculator::new())
 }
 
-fn rec_compute_number_of_possible_accepted(rules: &HashMap<&str, Rule>, current_rule: &str, mut cc: ConditionCalculator) -> u128 {
+fn rec_compute_number_of_possible_accepted(
+    rules: &HashMap<&str, Rule>,
+    current_rule: &str,
+    mut cc: ConditionCalculator,
+) -> u128 {
     let mut sum = 0;
     let rule = rules.get(current_rule).unwrap();
     for (category, condition, next_rule) in rule.sub_rules.iter() {
@@ -51,18 +56,18 @@ fn rec_compute_number_of_possible_accepted(rules: &HashMap<&str, Rule>, current_
     match rule.last_resort.as_str() {
         "A" => {
             sum += cc.compute_possible_variations();
-        },
+        }
         "R" => {}
         next => sum += rec_compute_number_of_possible_accepted(rules, next, cc),
     }
     sum
 }
 
-
 fn parse_input(input: &str) -> (HashMap<&str, Rule>, Vec<Part>) {
     let (rules_input, parts_input) = input.split_once("\n\n").unwrap();
 
-    let rules = rules_input.lines()
+    let rules = rules_input
+        .lines()
         .map(|line| {
             let (key, rule) = line.split_once("{").unwrap();
             let rule = rule.trim_end_matches("}");
@@ -71,7 +76,8 @@ fn parse_input(input: &str) -> (HashMap<&str, Rule>, Vec<Part>) {
         })
         .collect::<HashMap<_, _>>();
 
-    let parts = parts_input.lines()
+    let parts = parts_input
+        .lines()
         .map(|line| Part::parse(&line[1..line.len() - 1]))
         .collect::<Vec<_>>();
 
@@ -102,7 +108,10 @@ impl Rule {
             sub_rules.push((category, condition, next_rule.to_string()))
         }
 
-        Self { sub_rules, last_resort }
+        Self {
+            sub_rules,
+            last_resort,
+        }
     }
 
     fn get_next_rule(&self, part: &Part) -> &str {
@@ -143,17 +152,13 @@ impl Condition {
 
     fn negate(&self) -> Self {
         match self.operation {
-            Operation::Lt => {
-                Self {
-                    operation: Operation::Gt,
-                    value: self.value - 1,
-                }
+            Operation::Lt => Self {
+                operation: Operation::Gt,
+                value: self.value - 1,
             },
-            Operation::Gt => {
-                Self {
-                    operation: Operation::Lt,
-                    value: self.value + 1,
-                }
+            Operation::Gt => Self {
+                operation: Operation::Lt,
+                value: self.value + 1,
             },
         }
     }
@@ -202,7 +207,8 @@ struct Part {
 
 impl Part {
     fn parse(input: &str) -> Self {
-        let map = input.split(",")
+        let map = input
+            .split(",")
             .map(|part| {
                 let category = Category::parse(&part[..1]);
                 let value = part[2..].parse().unwrap();
@@ -214,9 +220,7 @@ impl Part {
     }
 
     fn sum_values(&self) -> usize {
-        self.map.values()
-            .map(|value| *value as usize)
-            .sum()
+        self.map.values().map(|value| *value as usize).sum()
     }
 }
 
@@ -253,8 +257,16 @@ impl ConditionCalculator {
             let mut max = 4000;
             for condition in conditions {
                 match condition.operation {
-                    Operation::Lt => if condition.value < max { max = condition.value - 1; },
-                    Operation::Gt => if condition.value > min { min = condition.value + 1; },
+                    Operation::Lt => {
+                        if condition.value < max {
+                            max = condition.value - 1;
+                        }
+                    }
+                    Operation::Gt => {
+                        if condition.value > min {
+                            min = condition.value + 1;
+                        }
+                    }
                 }
             }
             (max - min) as u128 + 1
@@ -274,28 +286,81 @@ mod tests {
     #[test]
     fn condition_calculator_test() {
         let mut cc = ConditionCalculator::new();
-        cc.add_condition(Category::X, Condition { value: 2, operation: Operation::Lt });
-        cc.add_condition(Category::M, Condition { value: 2, operation: Operation::Lt });
+        cc.add_condition(
+            Category::X,
+            Condition {
+                value: 2,
+                operation: Operation::Lt,
+            },
+        );
+        cc.add_condition(
+            Category::M,
+            Condition {
+                value: 2,
+                operation: Operation::Lt,
+            },
+        );
         assert_eq!(cc.compute_possible_variations(), 4000 * 4000);
 
         let mut cc = ConditionCalculator::new();
         assert_eq!(cc.compute_possible_variations(), 4000 * 4000 * 4000 * 4000);
 
         let mut cc = ConditionCalculator::new();
-        cc.add_condition(Category::X, Condition { value: 2, operation: Operation::Lt });
-        cc.add_condition(Category::M, Condition { value: 2, operation: Operation::Lt });
-        cc.add_condition(Category::A, Condition { value: 2, operation: Operation::Lt });
-        cc.add_condition(Category::S, Condition { value: 2, operation: Operation::Lt });
+        cc.add_condition(
+            Category::X,
+            Condition {
+                value: 2,
+                operation: Operation::Lt,
+            },
+        );
+        cc.add_condition(
+            Category::M,
+            Condition {
+                value: 2,
+                operation: Operation::Lt,
+            },
+        );
+        cc.add_condition(
+            Category::A,
+            Condition {
+                value: 2,
+                operation: Operation::Lt,
+            },
+        );
+        cc.add_condition(
+            Category::S,
+            Condition {
+                value: 2,
+                operation: Operation::Lt,
+            },
+        );
         assert_eq!(cc.compute_possible_variations(), 1);
 
         let mut cc = ConditionCalculator::new();
-        cc.add_condition(Category::S, Condition { value: 1351, operation: Operation::Lt });
+        cc.add_condition(
+            Category::S,
+            Condition {
+                value: 1351,
+                operation: Operation::Lt,
+            },
+        );
         assert_eq!(cc.compute_possible_variations(), 86_400_000_000_000);
 
         let mut cc = ConditionCalculator::new();
-        cc.add_condition(Category::S, Condition { value: 1351, operation: Operation::Lt });
-        cc.add_condition(Category::M, Condition { value: 2090, operation: Operation::Gt });
+        cc.add_condition(
+            Category::S,
+            Condition {
+                value: 1351,
+                operation: Operation::Lt,
+            },
+        );
+        cc.add_condition(
+            Category::M,
+            Condition {
+                value: 2090,
+                operation: Operation::Gt,
+            },
+        );
         assert_eq!(cc.compute_possible_variations(), 4000 * 4000 * 1350 * 1910);
-
     }
 }

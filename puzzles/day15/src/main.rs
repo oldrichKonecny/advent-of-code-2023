@@ -6,9 +6,7 @@ fn main() {
 }
 
 fn first_part(input: &str) -> usize {
-    input.split(',')
-        .map(compute_hash)
-        .sum()
+    input.split(',').map(compute_hash).sum()
 }
 
 fn second_part(input: &str) -> usize {
@@ -17,20 +15,27 @@ fn second_part(input: &str) -> usize {
         lens_boxes.push(LensBox::new());
     }
 
-    input.split(',')
-        .for_each(|cmd| {
-            if cmd.contains('=') {
-                let (label, value) = cmd.split_once('=').expect(&format!("Cannot split command: {}", cmd));
-                let index = compute_hash(label);
-                let value = value.parse::<u8>().expect(&format!("Cannot parse value: {}", value));
-                lens_boxes[index].replace_or_add_lens(label.to_string(), value);
-            } else {
-                let label = cmd.get(0..cmd.len() - 1).expect(&format!("Cannot get label: {}", cmd));
-                let index= compute_hash(label);
-                lens_boxes[index].remove_lens(label);
-            }
-        });
-    lens_boxes.iter().enumerate()
+    input.split(',').for_each(|cmd| {
+        if cmd.contains('=') {
+            let (label, value) = cmd
+                .split_once('=')
+                .expect(&format!("Cannot split command: {}", cmd));
+            let index = compute_hash(label);
+            let value = value
+                .parse::<u8>()
+                .expect(&format!("Cannot parse value: {}", value));
+            lens_boxes[index].replace_or_add_lens(label.to_string(), value);
+        } else {
+            let label = cmd
+                .get(0..cmd.len() - 1)
+                .expect(&format!("Cannot get label: {}", cmd));
+            let index = compute_hash(label);
+            lens_boxes[index].remove_lens(label);
+        }
+    });
+    lens_boxes
+        .iter()
+        .enumerate()
         .map(|(index, lens_box)| lens_box.get_focusing_power(index))
         .sum()
 }
@@ -46,14 +51,12 @@ fn compute_hash(input: &str) -> usize {
 }
 
 struct LensBox {
-    lenses: Vec<(String, u8)>
+    lenses: Vec<(String, u8)>,
 }
 
 impl LensBox {
     fn new() -> Self {
-        Self {
-            lenses: Vec::new(),
-        }
+        Self { lenses: Vec::new() }
     }
 
     fn replace_or_add_lens(&mut self, label: String, value: u8) {
@@ -69,7 +72,9 @@ impl LensBox {
     }
 
     fn get_focusing_power(&self, box_number: usize) -> usize {
-        self.lenses.iter().enumerate()
+        self.lenses
+            .iter()
+            .enumerate()
             .map(|(index, (_, power))| *power as usize * (box_number + 1) * (index + 1))
             .sum()
     }

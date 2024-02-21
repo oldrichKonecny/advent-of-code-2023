@@ -6,14 +6,16 @@ fn main() {
 }
 
 fn first_part(input: &str) -> usize {
-    input.split("\n\n")
+    input
+        .split("\n\n")
         .map(ReflectionPattern::parse)
         .filter_map(|pattern| pattern.determine_value(None))
         .sum()
 }
 
 fn second_part(input: &str) -> usize {
-    input.split("\n\n")
+    input
+        .split("\n\n")
         .map(ReflectionPattern::parse)
         .map(|pattern| pattern.determine_new_value())
         .sum()
@@ -26,22 +28,18 @@ struct ReflectionPattern {
 
 impl ReflectionPattern {
     fn parse(input: &str) -> Self {
-        let pattern = input.lines()
-            .map(|line| line.bytes().collect())
-            .collect();
-        Self {
-            pattern,
-        }
+        let pattern = input.lines().map(|line| line.bytes().collect()).collect();
+        Self { pattern }
     }
 
     fn determine_value(&self, old_value: Option<usize>) -> Option<usize> {
         for i in 1..self.pattern.len() {
-           if self.check_horizontal(i) {
-               let res = i * 100;
-               if old_value.is_none() || old_value.unwrap() != res {
-                   return Some(res);
-               }
-           }
+            if self.check_horizontal(i) {
+                let res = i * 100;
+                if old_value.is_none() || old_value.unwrap() != res {
+                    return Some(res);
+                }
+            }
         }
         for i in 1..self.pattern[0].len() {
             if self.check_vertical(i) {
@@ -97,7 +95,7 @@ impl ReflectionPattern {
 
     fn check_vertical(&self, col: usize) -> bool {
         assert_ne!(col, 0);
-        let first = self.get_column(col-1);
+        let first = self.get_column(col - 1);
         let sec = self.get_column(col);
         if first == sec {
             for i in 1..(self.pattern[0].len() / 2 + 1) {
@@ -120,8 +118,6 @@ impl ReflectionPattern {
 
     fn get_column(&self, col: usize) -> Vec<u8> {
         assert!(col < self.pattern[0].len());
-        self.pattern.iter()
-            .map(|row| row[col])
-            .collect()
+        self.pattern.iter().map(|row| row[col]).collect()
     }
 }

@@ -9,18 +9,21 @@ fn main() {
 
 fn first_part(input: &str) -> u64 {
     let mut parts = input.split("\n\n");
-    let seeds = parts.next().unwrap()
-        .split_once(":").unwrap().1
+    let seeds = parts
+        .next()
+        .unwrap()
+        .split_once(":")
+        .unwrap()
+        .1
         .trim()
         .split_whitespace()
         .map(|s| s.parse::<u64>().unwrap())
         .collect::<Vec<_>>();
 
-    let convert_table = parts
-        .map(ConvertMap::parse)
-        .collect::<Vec<_>>();
+    let convert_table = parts.map(ConvertMap::parse).collect::<Vec<_>>();
 
-    seeds.iter()
+    seeds
+        .iter()
         .map(|seed| {
             let mut value = *seed;
             for convert_map in convert_table.iter() {
@@ -34,21 +37,24 @@ fn first_part(input: &str) -> u64 {
 
 fn second_part(input: &str) -> u64 {
     let mut parts = input.split("\n\n");
-    let seed_ranges = parts.next().unwrap()
-        .split_once(":").unwrap().1
+    let seed_ranges = parts
+        .next()
+        .unwrap()
+        .split_once(":")
+        .unwrap()
+        .1
         .trim()
         .split_whitespace()
         .map(|s| s.parse::<u64>().unwrap())
         .collect::<Vec<_>>()
         .chunks(2)
-        .map(|chunk| chunk[0]..=chunk[0]+chunk[1]-1)
+        .map(|chunk| chunk[0]..=chunk[0] + chunk[1] - 1)
         .collect::<Vec<_>>();
 
-    let convert_table = parts
-        .map(ConvertMap::parse)
-        .collect::<Vec<_>>();
+    let convert_table = parts.map(ConvertMap::parse).collect::<Vec<_>>();
 
-    seed_ranges.iter()
+    seed_ranges
+        .iter()
         .map(|seed_range| {
             let mut min = None;
             for seed in *seed_range.start()..=*seed_range.end() {
@@ -64,13 +70,13 @@ fn second_part(input: &str) -> u64 {
             }
             min.unwrap()
         })
-        .min().unwrap()
+        .min()
+        .unwrap()
 }
-
 
 #[derive(Debug)]
 struct ConvertMap {
-    ranges: Vec<(RangeInclusive<u64>, RangeInclusive<u64>)>
+    ranges: Vec<(RangeInclusive<u64>, RangeInclusive<u64>)>,
 }
 
 impl ConvertMap {
@@ -84,7 +90,10 @@ impl ConvertMap {
 
             assert!(split.next().is_none());
 
-            ranges.push((source_start..=source_start + range_length - 1, destination_start..=destination_start + range_length - 1));
+            ranges.push((
+                source_start..=source_start + range_length - 1,
+                destination_start..=destination_start + range_length - 1,
+            ));
         }
         Self { ranges }
     }

@@ -23,11 +23,21 @@ fn first_part(input: &str) -> usize {
 
             if !b.is_ascii_digit() || x == line.len() - 1 {
                 if let Some((x1, x2)) = num_range {
-                    if matrix.get_surroundings(x1..=x2, y).iter().any(|s| contains_special_char(s)) {
+                    if matrix
+                        .get_surroundings(x1..=x2, y)
+                        .iter()
+                        .any(|s| contains_special_char(s))
+                    {
                         let slice = line.get(x1..x2 + 1).unwrap();
                         let parsed = slice.parse::<usize>();
                         if parsed.is_err() {
-                            println!("x1: {}, x2: {}, slice: {:?}\nline: {}", x1, x2, line.get(..x2 + 1), line);
+                            println!(
+                                "x1: {}, x2: {}, slice: {:?}\nline: {}",
+                                x1,
+                                x2,
+                                line.get(..x2 + 1),
+                                line
+                            );
                         }
                         final_sum += parsed.unwrap();
                     }
@@ -44,13 +54,12 @@ fn contains_special_char(input: &str) -> bool {
 }
 
 fn second_part(input: &str) -> usize {
-let engine = Engine::parse(input);
+    let engine = Engine::parse(input);
     engine.compute_gear_score_sum()
 }
 
 struct MatrixRow<'a> {
     row: &'a str,
-
 }
 
 #[derive(Debug)]
@@ -73,7 +82,10 @@ impl<'a> Matrix<'a> {
     }
 
     fn get_surroundings(&self, x_range: RangeInclusive<usize>, y: usize) -> Vec<&'a str> {
-        fn determine_x_range(x_range: &RangeInclusive<usize>, width: usize) -> RangeInclusive<usize> {
+        fn determine_x_range(
+            x_range: &RangeInclusive<usize>,
+            width: usize,
+        ) -> RangeInclusive<usize> {
             let mut x1 = *x_range.start();
             let mut x2 = *x_range.end();
             if x1 > 0 {
@@ -92,14 +104,17 @@ impl<'a> Matrix<'a> {
             surroundings.push(&self.data[y_plus + (x_start - 1)..y_plus + x_start]);
         }
 
-        if x_end < self.width -1 {
+        if x_end < self.width - 1 {
             surroundings.push(&self.data[y_plus + (x_end + 1)..y_plus + (x_end + 2)]);
         }
 
         if y > 0 {
             let considered_x_range = determine_x_range(&x_range, self.width);
             let y_plus = (y - 1) * (self.width + 1);
-            if let Some(val) = self.data.get(y_plus + *considered_x_range.start()..y_plus + *considered_x_range.end() + 1) {
+            if let Some(val) = self
+                .data
+                .get(y_plus + *considered_x_range.start()..y_plus + *considered_x_range.end() + 1)
+            {
                 surroundings.push(val);
             }
         }
@@ -107,7 +122,10 @@ impl<'a> Matrix<'a> {
         if y < self.height - 1 {
             let considered_x_range = determine_x_range(&x_range, self.width);
             let y_plus = (y + 1) * (self.width + 1);
-            if let Some(val) = self.data.get(y_plus + *considered_x_range.start()..y_plus + *considered_x_range.end() + 1) {
+            if let Some(val) = self
+                .data
+                .get(y_plus + *considered_x_range.start()..y_plus + *considered_x_range.end() + 1)
+            {
                 surroundings.push(val);
             }
         }
@@ -129,7 +147,7 @@ impl<'a> Engine<'a> {
         let mut number_indexes = Vec::new();
         let mut asterisk_indexes = Vec::new();
         let mut row_length = 0;
-        let mut number_start= None;
+        let mut number_start = None;
         input.lines().for_each(|line| {
             row_length = line.len();
             rows.push(line);
@@ -167,9 +185,14 @@ impl<'a> Engine<'a> {
     }
 
     fn compute_gear_score_sum(&self) -> usize {
-        self.asterisk_indexes.iter().enumerate()
+        self.asterisk_indexes
+            .iter()
+            .enumerate()
             .map(|(y, asterix_row)| {
-                asterix_row.iter().flat_map(|&x| self.compute_single_gear(x, y)).sum::<usize>()
+                asterix_row
+                    .iter()
+                    .flat_map(|&x| self.compute_single_gear(x, y))
+                    .sum::<usize>()
             })
             .sum()
     }
@@ -177,15 +200,18 @@ impl<'a> Engine<'a> {
     fn compute_single_gear(&self, x: usize, y: usize) -> Option<usize> {
         let mut neighbor_numbers = Vec::new();
         if self.number_indexes.get(y - 1).is_some() {
-            let numbers = self.number_in_indexes((0.max(x - 1), (self.row_length - 1).min(x + 1)), y - 1);
+            let numbers =
+                self.number_in_indexes((0.max(x - 1), (self.row_length - 1).min(x + 1)), y - 1);
             neighbor_numbers.extend(numbers);
         }
         if self.number_indexes.get(y).is_some() {
-            let numbers = self.number_in_indexes((0.max(x - 1), (self.row_length - 1).min(x + 1)), y);
+            let numbers =
+                self.number_in_indexes((0.max(x - 1), (self.row_length - 1).min(x + 1)), y);
             neighbor_numbers.extend(numbers);
         }
         if self.number_indexes.get(y + 1).is_some() {
-            let numbers = self.number_in_indexes((0.max(x - 1), (self.row_length - 1).min(x + 1)), y + 1);
+            let numbers =
+                self.number_in_indexes((0.max(x - 1), (self.row_length - 1).min(x + 1)), y + 1);
             neighbor_numbers.extend(numbers);
         }
 
@@ -200,11 +226,18 @@ impl<'a> Engine<'a> {
         let mut number_indexes = Vec::new();
         if let Some(row) = self.number_indexes.get(y) {
             for &(start, end) in row {
-                if (x1 >= start && x1 <= end) || (x2 >= start && x2 <= end) || (x1 <= start && x2 >= end) {
-                    let number = self.rows
-                        .get(y).expect("row not found")
-                        .get(start..end + 1).expect("column not found")
-                        .parse::<usize>().expect("parse failed");
+                if (x1 >= start && x1 <= end)
+                    || (x2 >= start && x2 <= end)
+                    || (x1 <= start && x2 >= end)
+                {
+                    let number = self
+                        .rows
+                        .get(y)
+                        .expect("row not found")
+                        .get(start..end + 1)
+                        .expect("column not found")
+                        .parse::<usize>()
+                        .expect("parse failed");
                     number_indexes.push(number);
                 }
             }

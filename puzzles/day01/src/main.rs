@@ -6,7 +6,8 @@ fn main() {
 }
 
 fn first_part(input: &str) -> u32 {
-    input.lines()
+    input
+        .lines()
         .map(|line| {
             let mut first = None;
             let mut second = None;
@@ -17,25 +18,31 @@ fn first_part(input: &str) -> u32 {
                     second = Some(val);
                 }
             }
-            first.map(|f| f * 10).map(|f| f + second.unwrap()).unwrap_or_default()
+            first
+                .map(|f| f * 10)
+                .map(|f| f + second.unwrap())
+                .unwrap_or_default()
         })
         .sum()
 }
 
-
-
 fn second_part(input: &str) -> u32 {
-    let regex_first = regex::Regex::new(r"^.*?([1-9]|one|two|three|four|five|six|seven|eight|nine).*$").unwrap();
-    let regex_last = regex::Regex::new(r"^.*([1-9]|one|two|three|four|five|six|seven|eight|nine).*$").unwrap();
-    input.lines()
+    let regex_first =
+        regex::Regex::new(r"^.*?([1-9]|one|two|three|four|five|six|seven|eight|nine).*$").unwrap();
+    let regex_last =
+        regex::Regex::new(r"^.*([1-9]|one|two|three|four|five|six|seven|eight|nine).*$").unwrap();
+    input
+        .lines()
         .map(|line| {
-            let first = regex_first.captures(line)
+            let first = regex_first
+                .captures(line)
                 .map(|c| c.get(1).unwrap())
                 .map(|g| g.as_str())
                 .map(parse_number)
                 .expect(&format!("Invalid line first: {}", line));
 
-            let last = regex_last.captures(line)
+            let last = regex_last
+                .captures(line)
                 .map(|c| c.get(1).unwrap())
                 .map(|g| g.as_str())
                 .map(parse_number)
@@ -57,6 +64,8 @@ fn parse_number(number: &str) -> u32 {
         "seven" => 7,
         "eight" => 8,
         "nine" => 9,
-        _ => number.parse().expect(&format!("Invalid number: {}", number)),
+        _ => number
+            .parse()
+            .expect(&format!("Invalid number: {}", number)),
     }
 }

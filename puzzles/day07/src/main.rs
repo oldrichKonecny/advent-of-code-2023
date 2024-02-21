@@ -10,23 +10,26 @@ fn main() {
 }
 
 fn first_part(input: &str) -> u64 {
-    let mut card_hands = input.lines()
+    let mut card_hands = input
+        .lines()
         .map(|line| line.parse::<CardHand>().unwrap())
         .collect::<Vec<_>>();
 
     card_hands.sort();
-    card_hands.iter().enumerate()
+    card_hands
+        .iter()
+        .enumerate()
         .map(|(index, card_hand)| (index as u64 + 1) * card_hand.value)
         .sum()
 }
 
 fn second_part(input: &str) -> u64 {
-    let mut card_hands = input.lines()
-        .map(|line| parse(line))
-        .collect::<Vec<_>>();
+    let mut card_hands = input.lines().map(|line| parse(line)).collect::<Vec<_>>();
 
     card_hands.sort();
-    card_hands.iter().enumerate()
+    card_hands
+        .iter()
+        .enumerate()
         .map(|(index, card_hand)| (index as u64 + 1) * card_hand.value)
         .sum()
 }
@@ -55,7 +58,6 @@ impl FromStr for CardHand {
         let card_hand_type = match char_map.len() {
             1 => CardHandType::FiveOfAKind,
             2 => {
-
                 let mut values = char_map.values();
                 let first = values.next().unwrap();
                 let second = values.next().unwrap();
@@ -64,7 +66,7 @@ impl FromStr for CardHand {
                 } else {
                     CardHandType::FullHouse
                 }
-            },
+            }
             3 => {
                 let mut values = char_map.values();
                 let first = values.next().unwrap();
@@ -75,13 +77,17 @@ impl FromStr for CardHand {
                 } else {
                     CardHandType::TwoPairs
                 }
-            },
+            }
             4 => CardHandType::OnePair,
             5 => CardHandType::HighCard,
             _ => unreachable!(),
         };
 
-        Ok(Self { name, card_hand_type, value })
+        Ok(Self {
+            name,
+            card_hand_type,
+            value,
+        })
     }
 }
 
@@ -108,7 +114,9 @@ impl Ord for CardHand {
             }
             Ordering::Equal
         } else {
-            self.card_hand_type.cmp_value().cmp(&other.card_hand_type.cmp_value())
+            self.card_hand_type
+                .cmp_value()
+                .cmp(&other.card_hand_type.cmp_value())
         }
     }
 }
@@ -165,7 +173,6 @@ fn parse(s: &str) -> CardHand {
     let card_hand_type = match (char_map.len(), jokers) {
         (1, None) | (1, Some(_)) | (2, Some(_)) => CardHandType::FiveOfAKind,
         (2, None) => {
-
             let mut values = char_map.values();
             let first = values.next().unwrap();
             let second = values.next().unwrap();
@@ -174,7 +181,7 @@ fn parse(s: &str) -> CardHand {
             } else {
                 CardHandType::FullHouse
             }
-        },
+        }
         (3, None) => {
             let mut values = char_map.values();
             let first = values.next().unwrap();
@@ -185,14 +192,14 @@ fn parse(s: &str) -> CardHand {
             } else {
                 CardHandType::TwoPairs
             }
-        },
+        }
         (3, Some(&j)) => {
             let mut values = char_map.values();
             let first = values.next().unwrap();
             let second = values.next().unwrap();
             let third = values.next().unwrap();
 
-            if j == 1 && *first != 3 && *second != 3 && *third != 3{
+            if j == 1 && *first != 3 && *second != 3 && *third != 3 {
                 CardHandType::FullHouse
             } else {
                 CardHandType::FourOfAKind
@@ -204,7 +211,11 @@ fn parse(s: &str) -> CardHand {
         _ => unreachable!(),
     };
 
-    CardHand { name, card_hand_type, value }
+    CardHand {
+        name,
+        card_hand_type,
+        value,
+    }
 }
 
 // 243276310 too high

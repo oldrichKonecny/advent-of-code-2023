@@ -24,7 +24,8 @@ struct SkyMap {
 
 impl SkyMap {
     fn parse(input: &str) -> Self {
-        let sky_map = input.lines()
+        let sky_map = input
+            .lines()
             .map(|line| line.chars().collect::<Vec<char>>())
             .collect::<Vec<_>>();
         let mut galaxies = Vec::new();
@@ -58,11 +59,18 @@ impl SkyMap {
         let mut all_distances = 0;
         for (index, galaxy1) in self.galaxies.iter().enumerate() {
             for galaxy2 in self.galaxies.iter().skip(index) {
-                let (distance_y, distance_x) = ((galaxy1.0 as i32 - galaxy2.0 as i32).abs() as usize, (galaxy1.1 as i32 - galaxy2.1 as i32).abs() as usize);
-                let empty_y = self.empty_rows.iter()
+                let (distance_y, distance_x) = (
+                    (galaxy1.0 as i32 - galaxy2.0 as i32).abs() as usize,
+                    (galaxy1.1 as i32 - galaxy2.1 as i32).abs() as usize,
+                );
+                let empty_y = self
+                    .empty_rows
+                    .iter()
                     .filter(|&&r| r > galaxy1.0.min(galaxy2.0) && r < galaxy1.0.max(galaxy2.0))
                     .count();
-                let empty_x = self.empty_cols.iter()
+                let empty_x = self
+                    .empty_cols
+                    .iter()
                     .filter(|&&c| c > galaxy1.1.min(galaxy2.1) && c < galaxy1.1.max(galaxy2.1))
                     .count();
                 let distance_y = (distance_y - empty_y) + gravity_constants(empty_y);

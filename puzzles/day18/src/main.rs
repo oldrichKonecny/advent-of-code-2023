@@ -6,17 +6,13 @@ fn main() {
 }
 
 fn first_part(input: &str) -> i64 {
-    let dig_instructions = input.lines()
-        .map(Instruction::parse)
-        .collect::<Vec<_>>();
+    let dig_instructions = input.lines().map(Instruction::parse).collect::<Vec<_>>();
     let basin = Basin::new(&dig_instructions);
     basin.compute_shoelace()
 }
 
 fn second_part(input: &str) -> i64 {
-    let dig_instructions = input.lines()
-        .map(Instruction::parse)
-        .collect::<Vec<_>>();
+    let dig_instructions = input.lines().map(Instruction::parse).collect::<Vec<_>>();
     let basin = Basin::new_with_color(&dig_instructions);
     basin.compute_shoelace()
 }
@@ -33,7 +29,7 @@ impl Basin {
 
         for instruction in dig_instructions {
             match instruction.direction {
-                Direction::U => last_point = (last_point.0, last_point.1  - instruction.distance),
+                Direction::U => last_point = (last_point.0, last_point.1 - instruction.distance),
                 Direction::D => last_point = (last_point.0, last_point.1 + instruction.distance),
                 Direction::L => last_point = (last_point.0 - instruction.distance, last_point.1),
                 Direction::R => last_point = (last_point.0 + instruction.distance, last_point.1),
@@ -60,11 +56,12 @@ impl Basin {
         let mut bounds = vec![(0, 0)];
         let mut last_point = (0, 0);
 
-        dig_instructions.iter()
+        dig_instructions
+            .iter()
             .map(|instruction| decode_color(&instruction.color))
             .for_each(|(direction, distance)| {
                 match direction {
-                    Direction::U => last_point = (last_point.0, last_point.1  - distance),
+                    Direction::U => last_point = (last_point.0, last_point.1 - distance),
                     Direction::D => last_point = (last_point.0, last_point.1 + distance),
                     Direction::L => last_point = (last_point.0 - distance, last_point.1),
                     Direction::R => last_point = (last_point.0 + distance, last_point.1),
@@ -82,7 +79,11 @@ impl Basin {
             let a = self.bounds[i];
             let b = self.bounds[i + 1];
             shoelace += a.0 * b.1 - b.0 * a.1;
-            perimeter += if a.0 == b.0 { (a.1 - b.1).abs() } else { (a.0 - b.0).abs() };
+            perimeter += if a.0 == b.0 {
+                (a.1 - b.1).abs()
+            } else {
+                (a.0 - b.0).abs()
+            };
         }
         (shoelace.abs() / 2) + (perimeter / 2) + 1
     }

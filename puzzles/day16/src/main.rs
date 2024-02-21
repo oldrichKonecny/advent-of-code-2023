@@ -62,9 +62,11 @@ impl Grid {
     fn get_marked_tiles(&self) -> usize {
         self.grid
             .iter()
-            .map(|row| row.iter()
-                .filter(|(_, marked)| marked.iter().any(|dir| dir.is_some()))
-                .count())
+            .map(|row| {
+                row.iter()
+                    .filter(|(_, marked)| marked.iter().any(|dir| dir.is_some()))
+                    .count()
+            })
             .sum()
     }
 
@@ -100,13 +102,13 @@ fn beam_path(grid: &mut Grid, (mut y, mut x): (usize, usize), direction: Directi
                             break;
                         }
                         y -= 1;
-                    },
+                    }
                     '|' => {
                         if y == 0 {
                             break;
                         }
                         y -= 1;
-                    },
+                    }
                     '-' => {
                         if x > 0 {
                             beam_path(grid, (y, x - 1), Direction::West);
@@ -115,22 +117,21 @@ fn beam_path(grid: &mut Grid, (mut y, mut x): (usize, usize), direction: Directi
                             return beam_path(grid, (y, x + 1), Direction::East);
                         }
                         break;
-                    },
+                    }
                     '\\' => {
                         if x > 0 {
                             return beam_path(grid, (y, x - 1), Direction::West);
                         }
                         break;
-                    },
+                    }
                     '/' => {
                         if x < grid.grid[y].len() - 1 {
                             return beam_path(grid, (y, x + 1), Direction::East);
                         }
                         break;
-                    },
-                    _ => panic!("Invalid input")
+                    }
+                    _ => panic!("Invalid input"),
                 }
-
             }
         }
         Direction::South => {
@@ -145,13 +146,13 @@ fn beam_path(grid: &mut Grid, (mut y, mut x): (usize, usize), direction: Directi
                             break;
                         }
                         y += 1;
-                    },
+                    }
                     '|' => {
                         if y == grid.grid.len() - 1 {
                             break;
                         }
                         y += 1;
-                    },
+                    }
                     '-' => {
                         if x > 0 {
                             beam_path(grid, (y, x - 1), Direction::West);
@@ -160,20 +161,20 @@ fn beam_path(grid: &mut Grid, (mut y, mut x): (usize, usize), direction: Directi
                             return beam_path(grid, (y, x + 1), Direction::East);
                         }
                         break;
-                    },
+                    }
                     '\\' => {
                         if x < grid.grid[y].len() - 1 {
                             return beam_path(grid, (y, x + 1), Direction::East);
                         }
                         break;
-                    },
+                    }
                     '/' => {
                         if x > 0 {
                             return beam_path(grid, (y, x - 1), Direction::West);
                         }
                         break;
-                    },
-                    _ => panic!("Invalid input")
+                    }
+                    _ => panic!("Invalid input"),
                 }
             }
         }
@@ -189,7 +190,7 @@ fn beam_path(grid: &mut Grid, (mut y, mut x): (usize, usize), direction: Directi
                             break;
                         }
                         x -= 1;
-                    },
+                    }
                     '|' => {
                         if y > 0 {
                             beam_path(grid, (y - 1, x), Direction::North);
@@ -198,26 +199,26 @@ fn beam_path(grid: &mut Grid, (mut y, mut x): (usize, usize), direction: Directi
                             return beam_path(grid, (y + 1, x), Direction::South);
                         }
                         break;
-                    },
+                    }
                     '-' => {
                         if x == 0 {
                             break;
                         }
                         x -= 1;
-                    },
+                    }
                     '\\' => {
                         if y > 0 {
                             return beam_path(grid, (y - 1, x), Direction::North);
                         }
                         break;
-                    },
+                    }
                     '/' => {
                         if y < grid.grid.len() - 1 {
                             return beam_path(grid, (y + 1, x), Direction::South);
                         }
                         break;
-                    },
-                    _ => panic!("Invalid input")
+                    }
+                    _ => panic!("Invalid input"),
                 }
             }
         }
@@ -233,7 +234,7 @@ fn beam_path(grid: &mut Grid, (mut y, mut x): (usize, usize), direction: Directi
                             break;
                         }
                         x += 1;
-                    },
+                    }
                     '|' => {
                         if y > 0 {
                             beam_path(grid, (y - 1, x), Direction::North);
@@ -242,29 +243,28 @@ fn beam_path(grid: &mut Grid, (mut y, mut x): (usize, usize), direction: Directi
                             return beam_path(grid, (y + 1, x), Direction::South);
                         }
                         break;
-                    },
+                    }
                     '-' => {
                         if x == grid.grid[y].len() - 1 {
                             break;
                         }
                         x += 1;
-                    },
+                    }
                     '\\' => {
                         if y < grid.grid.len() - 1 {
                             return beam_path(grid, (y + 1, x), Direction::South);
                         }
                         break;
-                    },
+                    }
                     '/' => {
                         if y > 0 {
                             return beam_path(grid, (y - 1, x), Direction::North);
                         }
                         break;
-                    },
-                    _ => panic!("Invalid input")
+                    }
+                    _ => panic!("Invalid input"),
                 }
             }
         }
     }
 }
-
